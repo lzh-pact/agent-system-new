@@ -125,7 +125,7 @@ class ContentAgent:
         prev = START
         for s in stages:
             name = f"gen_{s.value}"
-            g.add_node(name, self._stage_node(session_id, product_info, s))
+            g.add_node(name, self._stage_node(session_id, product_info, s, task_id))
             g.add_edge(prev, name)
             prev = name
         g.add_edge(prev, END)
@@ -136,9 +136,9 @@ class ContentAgent:
         )
         return [_dict_to_gc(r) for r in state.get("results", [])]
 
-    def _stage_node(self, session_id: str, product_info: dict, stage: ContentStage):
+    def _stage_node(self, session_id: str, product_info: dict, stage: ContentStage, task_id: str):
         def node(state: dict) -> dict:
-            gc = self._run_stage(session_id, product_info, stage)
+            gc = self._run_stage(session_id, product_info, stage, task_id)
             results = list(state.get("results", []))
             results.append(_gc_to_dict(gc))
             return {"results": results}
@@ -149,7 +149,7 @@ class ContentAgent:
     # 单阶段执行（safe_call 重试 + 失败跳过）
     # ------------------------------------------------------------------
     def _run_stage(
-        self, session_id: str, product_info: dict, stage: ContentStage
+        self, session_id: str, product_info: dict, stage: ContentStage, task_id: str
     ) -> GeneratedContent:
         gen = STAGE_GENERATORS[stage]
         result = safe_call(
@@ -162,12 +162,14 @@ class ContentAgent:
                 stage=stage,
                 content="",
                 status=ContentStatus.FAILED,
+                task_id=task_id,
             )
         return GeneratedContent(
             session_id=session_id,
             stage=stage,
             content=result,
             status=ContentStatus.DONE,
+            task_id=task_id,
         )
 
 
