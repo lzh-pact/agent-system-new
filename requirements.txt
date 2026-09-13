@@ -1,0 +1,12 @@
+# 智能 AI Agent 售前服务系统 · 依赖（PRD 2.2，版本锁定）
+#
+# —— 核心必装：Agent 编排使用 LangGraph / LangChain 1.x ——
+langchain-core==1.4.0
+langgraph==1.2.1
+langgraph-checkpoint==4.1.1
+pyyaml==6.0.3
+#
+# —— 完整产线所需（PRD 2.2 要求写入并锁定）——
+pandas==3.0.3
+chromadb>=0.5        # 向量后端默认 chroma；未安装时自动回退内置 simple 后端
+streamlit==1.63.0
