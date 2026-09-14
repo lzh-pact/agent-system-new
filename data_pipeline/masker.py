@@ -75,10 +75,21 @@ def mask(
 
 
 def run_pipeline(records: list[dict]) -> tuple[list[dict], MaskReport]:
-    """端到端管道：清洗 → 去重 → 脱敏（会话切分由上游按需调用）。"""
+    """端到端管道：清洗 → 去重 → 脱敏（会话切分由上游按需调用）。
+
+    报告额外携带 ``stage_stats``：输入 / 清洗丢弃 / 去重删除 / 最终输出，
+    供前端漏斗可视化与审计核对。
+    """
     from .cleaner import clean
     from .dedupe import dedupe
 
     cleaned = clean(records)
     deduped = dedupe(cleaned)
-    return mask(deduped)
+    masked, report = mask(deduped)
+    report.stage_stats = {
+        "input": len(records),
+        "clean_dropped": len(records) - len(cleaned),
+        "dedupe_removed": len(cleaned) - len(deduped),
+        "output": len(masked),
+    }
+    return masked, report

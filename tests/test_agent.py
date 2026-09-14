@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app_core.config import LLMConfig  # noqa: E402
 from app_core.llm import LLMClient  # noqa: E402
 from agents.pre_sale.graph import ReActAgent  # noqa: E402
-from agents.pre_sale.tools import ToolAction  # noqa: E402
+from agents.pre_sale.tools import ToolAction, ToolRouter  # noqa: E402
 from service import System  # noqa: E402
 
 
@@ -39,6 +39,14 @@ class TestPreSaleAgent(unittest.TestCase):
         ans = self.system.ask("s", "智能音箱 M2 有库存吗？")
         self.assertFalse(ans.degraded)
         self.assertIn("get_stock", self._tools_used(ans))
+
+
+class TestToolRouter(unittest.TestCase):
+    def test_extract_key_chinese_adjacent(self):
+        """汉字紧邻产品 ID 时也能提取（\\b 在汉字/字母间不成立，须用负向断言）。"""
+        action = ToolRouter().decide("查一下P001的参数")
+        self.assertEqual(action.name, "get_product_info")
+        self.assertEqual(action.args["product_id"], "P001")
 
 
 class TestStress(unittest.TestCase):

@@ -34,6 +34,7 @@ class SessionStore:
         role: MessageRole,
         content: str,
         source_chunks: list | None = None,
+        trace: list | None = None,
     ) -> Message:
         """追加一条消息；会话不存在时自动创建（保证 ask 可直接调用）。"""
         s = self._sessions.get(session_id)
@@ -46,6 +47,7 @@ class SessionStore:
             content=content,
             session_id=session_id,
             source_chunks=source_chunks or [],
+            trace=trace or [],
         )
         s.updated_at = utcnow()
         self._messages[session_id].append(msg)

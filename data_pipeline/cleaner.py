@@ -1,6 +1,8 @@
 """数据清洗（BR-03.1）：处理空值、异常值、格式。"""
 from __future__ import annotations
 
+import math
+
 TEXT_FIELDS = ("content", "text", "message", "content_text")
 
 
@@ -11,7 +13,8 @@ def clean(records: list[dict]) -> list[dict]:
         rec = dict(raw)
         for key in list(rec.keys()):
             value = rec[key]
-            if value is None:
+            # None 与 NaN 都视为空：pandas 读 CSV 空单元格得到 float nan，不是 None
+            if value is None or (isinstance(value, float) and math.isnan(value)):
                 rec[key] = ""
             elif isinstance(value, str):
                 rec[key] = " ".join(value.split())  # 去除空白、折叠换行

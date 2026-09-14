@@ -8,7 +8,7 @@
 
 - **LangGraph 编排**：两个 Agent 均以 `LangGraph StateGraph` 实现（售前 ReAct 决策循环 / 内容生成多阶段工作流），工具以 LangChain `Tool` 封装，满足技术栈锁定（LangChain 1.x + LangGraph）。
 - **无需 API Key 亦可跑通**：LLM 无 Key 时走离线 Mock、向量后端 chromadb 未装时自动回退内置 `simple`（特征哈希），端到端演示与跑测试不受影响。
-- **六模块分层**：`app-core` 框架 / `data-pipeline` 数据管道 / `retrieval` 混合检索 / 售前咨询 Agent（ReAct）/ 内容生成 Agent（SubGraph）/ Streamlit 前端。
+- **六模块分层**：`app-core` 框架 / `data-pipeline` 数据管道 / `retrieval` 混合检索 / 售前咨询 Agent（ReAct）/ 内容生成 Agent（SubGraph）/ Vue 3 前端（FastAPI 网关）。
 - **可靠性内置**：统一 `safe_call` 重试/退避/降级，整体故障率为 0（G-5）；`max_steps` 兜底防死循环；Checkpointer 支持断点恢复。
 - **PII 脱敏 100%**（G-3）、**会话隔离 100%**（G-4）、**混合检索 FTS5 + 向量融合**（G-2，命中率 ≥85%，见 `docs/检索评测报告.md`）。
 
@@ -27,11 +27,16 @@ python demo.py
 python run_tests.py
 ```
 
-可选增强：
+启动 Web 前端（Vue 3 + FastAPI，总览 / 智能问答 / 知识入库 / 内容生成 / 数据管道五个页面）：
 
 ```bash
-pip install -r requirements.txt          # pyyaml/pandas/chromadb/streamlit
-python -m streamlit run frontend/app.py  # 启动 Web 前端
+pip install -r requirements.txt          # fastapi/uvicorn 等
+# 双击 启动前端.bat（自动构建 frontend/dist 并启动）,或手动:
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+# 浏览器访问 http://127.0.0.1:8000
+
+# 前端开发模式(热更新,需另一个终端):
+cd frontend && npm install && npm run dev   # http://localhost:5173,/api 自动代理到 8000
 ```
 
 接入真实大模型：复制 `.env.example` 为 `.env`，填入 `LLM_MODEL` / `LLM_API_KEY` / `LLM_BASE_URL`（兼容 OpenAI 接口）。
@@ -46,8 +51,9 @@ agent-system/
 ├── agents/
 │   ├── pre_sale/        # 模块 D：售前咨询 Agent（ReAct）
 │   └── content/         # 模块 E：内容生成 Agent（SubGraph + Checkpointer）
-├── frontend/            # 模块 F：Streamlit 前端
-├── tests/               # 单元测试（unittest）
+├── frontend/            # 模块 F：Vue 3 前端（Vite + Element Plus + ECharts）
+├── api/                 # 模块 F：FastAPI 网关（REST API + 托管前端静态资源）
+├── tests/               # 单元测试（unittest,含 API 测试）
 ├── docs/                # 测试报告 / 检索评测报告 / 验收清单（G-6）
 ├── data/                # 运行期数据 + eval_qa.json 评测集
 ├── service.py           # 系统门面：统一装配各模块

@@ -120,7 +120,9 @@ class ToolRouter:
 
     @staticmethod
     def _extract_key(query: str) -> str:
-        m = re.search(r"\b[Pp]\d{3}\b", query or "")
+        # 边界用字母数字负向断言而非 \b：汉字是 word 字符，「查一下P001的参数」
+        # 这类紧邻写法 \b 不成立会漏提取（与 rules.py 的 PII 边界同一坑）
+        m = re.search(r"(?<![0-9A-Za-z])[Pp]\d{3}(?![0-9A-Za-z])", query or "")
         return m.group(0).upper() if m else query
 
 

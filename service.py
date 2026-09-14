@@ -92,7 +92,7 @@ class System:
         ]
         ans = self.pre_sale.run(session_id, query, history=history)
         self.sessions.add_message(
-            session_id, MessageRole.ASSISTANT, ans.answer, ans.source_chunks
+            session_id, MessageRole.ASSISTANT, ans.answer, ans.source_chunks, ans.trace
         )
         return ans
 

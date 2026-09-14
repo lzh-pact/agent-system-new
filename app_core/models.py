@@ -81,6 +81,7 @@ class Message:
     message_id: str = field(default_factory=new_id)
     created_at: datetime = field(default_factory=utcnow)
     source_chunks: list = field(default_factory=list)
+    trace: list = field(default_factory=list)
 
 
 @dataclass
@@ -139,6 +140,7 @@ class MaskReport:
     mask_hits: dict = field(default_factory=dict)      # pii_type -> 命中次数
     masked_count: dict = field(default_factory=dict)   # pii_type -> 脱敏次数
     samples: list = field(default_factory=list)        # 抽样样本（脱敏前后对照）
+    stage_stats: dict = field(default_factory=dict)    # 管道各阶段计数（仅 run_pipeline 填充）
     report_id: str = field(default_factory=new_id)
     created_at: datetime = field(default_factory=utcnow)
 

@@ -107,9 +107,15 @@ class ContentAgent:
             if v.get("status") == ContentStatus.DONE.value
         }
         pending = [s for s in _ALL_STAGES if s.value not in done]
-        return self._run_stages(
+        results = self._run_stages(
             pending, state["session_id"], state.get("product", product_info), task_id
         )
+        # 回写检查点：新完成的阶段持久化，否则再次 resume 会重跑这些阶段
+        state.setdefault("stages", {}).update(
+            {gc.stage.value: _gc_to_dict(gc) for gc in results}
+        )
+        self.checkpointer.save(task_id, state)
+        return results
 
     # ------------------------------------------------------------------
     # LangGraph 编排
